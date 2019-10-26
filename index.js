@@ -50,13 +50,13 @@ intervalFunc = async () => {
             minute: curMinute
         };
         var day_selected_query = "day_selected."+day;
-        query[day_selected_query] = true;
-
-        console.log(JSON.stringify(pushList));        
+        query[day_selected_query] = true;    
 
         var pushList = await Alarm.find(query).catch(err => {
             console.log(err);
         });
+
+        console.log(JSON.stringify(pushList));    
 
         /* fcm push */
 
