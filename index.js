@@ -1,5 +1,6 @@
 var Alarm = require('./alarmModel');
 var dbConnect = require('./dbConnect');
+var fcm_admin = require('./fcm_pusher');
 dbConnect('user_auth');
 /* TODO: Author 정근화 */
 /*
@@ -20,7 +21,7 @@ dbConnect('user_auth');
 
 const dayString = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const initialDate = new Date();
-var targetMinute = initialDate.getMinutes()+1;
+var targetMinute = initialDate.getMinutes() + 1;
 var targetHour = initialDate.getHours();
 
 intervalFunc = async () => {
@@ -34,12 +35,12 @@ intervalFunc = async () => {
     const curHours = now.getHours();
 
     /* catch minute changed */
-    if(curMinute == targetMinute && curHours == targetHour){
+    if (curMinute == targetMinute && curHours == targetHour) {
         console.log("Minute changed! Check DB to Push! [" + dayString[day] + " / " + curHours + " / " + curMinute + "]");
 
         /* target minute change */
         targetMinute = (targetMinute + 1) % 60;
-        if(targetMinute == 0){
+        if (targetMinute == 0) {
             targetHour = (targetHour + 1) % 24;
         }
 
@@ -49,24 +50,24 @@ intervalFunc = async () => {
             hour: curHours,
             minute: curMinute
         };
-        var day_selected_query = "day_selected."+day;
-        query[day_selected_query] = true;    
+        var day_selected_query = "day_selected." + day;
+        query[day_selected_query] = true;
 
         var pushList = await Alarm.find(query).catch(err => {
             console.log(err);
         });
 
-        console.log(JSON.stringify(pushList));    
+        // pushList.
 
         /* fcm push */
+        // var response = await fcm_admin.messaging()
+        //     .send().catch(err => {
+        //         /* err occured */
+        //         console.log(JSON.stringify(err));
+        //     })
 
     }
 
 }
-Alarm.find({
-    isAlarmOn: true
-}, (err, res) => {
-    console.log(JSON.stringify(res));
-});
 
 setInterval(intervalFunc, 1000);
