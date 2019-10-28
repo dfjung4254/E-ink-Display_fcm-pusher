@@ -4,6 +4,10 @@
 
 # auto build in docker hub
 $ git push -u origin master
+
+$ docker pull dfjung4254/e-ink-display_fcm-pusher
 $ docker run -d -e "TZ=Asia/Seoul" --name fcm --network host -v /root/fcm_config:/root/fcm_config ${MY_IMAGE_ID}
+
+
 
 ```

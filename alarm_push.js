@@ -33,7 +33,7 @@ module.exports = async (curHours, curMinute, day) => {
         userIdArray.push(alarm.userId);
     }
 
-    console.log('pushInfo(noToken) : ' + JSON.stringify(pushInfo));
+    console.log('pushAlarmInfo(noToken) : ' + JSON.stringify(pushInfo));
 
     var pushUserList = await User.find({
         userId: userIdArray
@@ -46,7 +46,8 @@ module.exports = async (curHours, curMinute, day) => {
     }
 
     /* fcm push */
-    console.log('pushInfo : ' + JSON.stringify(pushInfo));
+    console.log('pushAlarmInfo : ' + JSON.stringify(pushInfo));
+    var messageArray = new Array();
     for (var uid of userIdArray) {
         var pushObj = pushInfo[uid];
         var message = {
@@ -58,17 +59,17 @@ module.exports = async (curHours, curMinute, day) => {
             },
             token: pushObj.token
         };
-
-        /* Error Catch 해야 함 - token 이 없을 수도 있음. */
-        console.log('message : ' + JSON.stringify(message));
-        var response = await fcm_admin.messaging()
-            .send(message)
-            .catch(err => {
-                console.log('Error sending message:', error);
-            });
-
-        console.log('Successfully sent message:', response);
-
+        messageArray.push(message);
     }
+
+    /* Error Catch 해야 함 - token 이 없을 수도 있음. */
+    console.log('AlarmMessage : ' + JSON.stringify(messageArray));
+    var messaging = fcm_admin.messaging();
+    var response = await messaging.sendAll(messageArray)
+        .catch(err => {
+            console.log('Error sending message : ' + err);
+        });
+
+    console.log('Successfully sent message:', response);
 
 };
