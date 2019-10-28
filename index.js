@@ -1,7 +1,7 @@
-var Alarm = require('./alarmModel');
-var User = require('./userModel');
 var dbConnect = require('./dbConnect');
-var fcm_admin = require('./fcm_pusher');
+var alarm_pusher = require('./alarm_push');
+var medicine_pusher = require('./medicine_push');
+
 dbConnect('user_auth');
 /* TODO: Author 정근화 */
 /*
@@ -45,73 +45,11 @@ intervalFunc = async () => {
             targetHour = (targetHour + 1) % 24;
         }
 
-        /* find db and get Token list */
-        /* TODO: 각 기기에 해당하는 id의 토큰에 각 메세지를 전송 */
-        var query = {
-            isAlarmOn: true,
-            hour: curHours,
-            minute: curMinute
-        };
-        var day_selected_query = "day_selected." + day;
-        query[day_selected_query] = true;
+        /* push alarm */
+        alarm_pusher(curHours, curMinute, day);
 
-        var pushAlarmList = await Alarm.find(query)
-            .catch(err => {
-                console.log(err);
-            });
-
-        console.log('pushAlarmList : ' + JSON.stringify(pushAlarmList));
-
-        var pushInfo = new Object();
-        var userIdArray = new Array();
-        for (var alarm of pushAlarmList) {
-            console.log('alarm : ' + JSON.stringify(alarm));
-            pushInfo[alarm.userId] = {
-                userId: alarm.userId,
-                title: alarm.title,
-                hour: alarm.hour,
-                minute: alarm.minute
-            }
-            userIdArray.push(alarm.userId);
-        }
-
-        console.log('pushInfo(noToken) : ' + JSON.stringify(pushInfo));
-
-        var pushUserList = await User.find({
-            userId: userIdArray
-        }).catch(err => {
-            console.log(err);
-        })
-
-        for (var user of pushUserList) {
-            pushInfo[user.userId].token = user.fcm_token;
-        }
-
-        /* fcm push */
-        console.log('pushInfo : ' + JSON.stringify(pushInfo));
-        for (var uid of userIdArray) {
-            var pushObj = pushInfo[uid];
-            var message = {
-                data: {
-                    type: 'alarm',
-                    title: pushObj.title,
-                    hour: pushObj.hour,
-                    minute: pushObj.minute
-                },
-                token: pushObj.token
-            };
-
-            /* Error Catch 해야 함 - token 이 없을 수도 있음. */
-            console.log('message : ' + JSON.stringify(message));
-            var response = await fcm_admin.messaging()
-                .send(message)
-                .catch(err => {
-                    console.log('Error sending message:', error);
-                });
-
-            console.log('Successfully sent message:', response);
-
-        }
+        /* push medicine */
+        medicine_pusher(curHours, curMinute, day);
 
     }
 
