@@ -7,7 +7,7 @@
 $ git push -u origin master
 
 $ docker pull dfjung4254/e-ink-display_fcm-pusher
-$ docker run -d -e "TZ=Asia/Seoul" --name fcm --network host -v /root/fcm_config:/root/fcm_config ${MY_IMAGE_ID}
+$ docker run -d -e "TZ=Asia/Seoul" --name fcm --add-host=db:172.17.0.1 -v /root/fcm_config:/root/fcm_config ${MY_IMAGE_ID}
 
 
 ```
